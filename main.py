@@ -25,9 +25,10 @@ def folder():
 
 def singleImage():
     
-    image_path = './images/20250430_124524.jpg'
+    image_path = './test_images/20250507_172141.jpg'
     image = cv2.imread(image_path)
     pred = model(image)
+    # may need some resizing here
     cards = []
     for result in pred: 
         for box in result.boxes:
@@ -46,8 +47,8 @@ def singleImage():
     pred[0].save('pred.jpg')
 
 if __name__ == '__main__':
-    folder()
-    # singleImage()
+    # folder()
+    singleImage()
 
     metrics = model.val(data='./data.yaml')
 

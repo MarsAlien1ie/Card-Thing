@@ -1,0 +1,11 @@
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+}
+
+main,
+header,
+footer {
+  position: relative;
+  z-index: 2;
+}

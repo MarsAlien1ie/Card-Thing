@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link
+      rel="stylesheet"
+      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+    />
+</head>
+
+<style>
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+</style>
+
+<body>
+    <div class= "container">
+        <%if(user) {%>
+
+            <h1> user exists </h1>
+
+        <%}else{%>
+
+           <div tabindex ="-1" class = "modal" id="authModal">
+                <div class = "modal-dialog modal-dialog-centered" role ="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class = "modal-title">Login</h5>
+                        </div>
+                        <div class="modal-body text-center">
+                            <a href="/auth/google/" class ="btn btn-primary"> Login with Google </a>
+                        </div>
+                    </div>
+                </div>
+           </div>
+
+        <%}%>
+    </div>
+</body>
+ <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+ <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+ <script>
+    $(document).ready(function() {
+        $("#authModal").modal({
+            backdrop:'static',keyboard:false
+        })
+        $("authModal").modal('show')
+    })
+ </script>
+</html>

@@ -1,5 +1,6 @@
 import React from 'react';
 import pikachuImage from '../images/crochet-pikachu.jpg';
+import { Link } from 'react-router-dom'; 
 
 const Hero = () => {
     return (
@@ -17,7 +18,9 @@ const Hero = () => {
                     true master trainer. Discover card values, and connect
                     with fellow collectors worldwide.
                 </p>
-                <button className="btn-red-outline">Start Collecting</button>
+                <Link to="/login">
+                    <button className="btn-red-outline">Start Collecting</button>
+                </Link>
             </div>
             <div className="hero-image-container">
                 <div className="hero-image">

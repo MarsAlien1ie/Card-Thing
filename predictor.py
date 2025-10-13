@@ -7,10 +7,11 @@ from ultralytics import YOLO
 
 model_file = './best.pt'
 db_file = 'updated_pokemon_card_database.csv'
-input_picture = './test_images/20250507_171024.jpg'
+# try working_arcanine.jpg / working_forroseed.jpg
+input_picture = './test_images/working_ferroseed.jpg'
 output_folder = './predictions_identified'
 yolo_confidence_threshold = 0.85
-hash_similary_threshold = 12
+hash_similary_threshold = 14
 
 
 def load_hash_database(filepath):

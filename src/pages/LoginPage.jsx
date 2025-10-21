@@ -1,11 +1,18 @@
 // src/components/LoginPage.js
 import React from 'react';
 import './LoginPage.css'; 
-import { Link } from 'react-router-dom'; 
+import {Link, useNavigate} from 'react-router-dom'
 import pikachuImage from '../images/pikachu.png'; 
 import pokeball from '../images/pokeball.png';
 
 const LoginPage = () => {
+    const navigate = useNavigate();
+    const handleLogin = (event) =>{
+        event.preventDefault();
+
+        console.log("Login successful, navigating to dashboard");
+        navigate('/dashboard');
+    };
     return (
         <div className="login-page-container">
             <div className="login-header">
@@ -19,7 +26,7 @@ const LoginPage = () => {
                 <img className="pokeball-decoration pos-7" src={pokeball} alt="" />
                 <img className="pokeball-decoration pos-8" src={pokeball} alt="" />
             </div>
-            <form className="login-card">
+            <form className="login-card" onSubmit={handleLogin}>
                 {/* Decrative Pikachu Image */}
                 <img src={pikachuImage} alt="Pikachu peeking" className="pikachu-peeking" />
                 <h1>Card Cataloger</h1>

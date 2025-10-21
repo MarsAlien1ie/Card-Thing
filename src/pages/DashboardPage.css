@@ -1,0 +1,252 @@
+/*  Main Dashboard Page  */
+.dashboard-container {
+    min-height: 100vh;
+    padding: 2rem 3rem;
+    font-family: 'Poppins', sans-serif;
+
+    background: linear-gradient(155deg,
+            #FFF176 0%,
+            #FFD54F 40%,
+            #c0dfee 60%,
+            #7BD5FF 100%);
+    background-attachment: fixed;
+}
+
+.pokeball-decoration {
+    position: absolute;
+    opacity: 0.8;
+}
+.pos-1 {
+    top: 12%;
+    left: 10%;
+    width: 70px;
+}
+
+.pos-2 {
+    top: 5%;
+    right: 15%;
+    width: 50px;
+}
+
+.pos-3 {
+    top: 70%;
+    left: 15%;
+    width: 70px;
+}
+
+.pos-4 {
+    top: 80%;
+    left: 5%;
+    width: 100px;
+}
+
+.pos-5 {
+    top: 10%;
+    left: 45%;
+    width: 40px;
+}
+
+.pos-6 {
+    top: 35%;
+    right: 45%;
+    width: 70px;
+}
+
+.pos-7 {
+    top: 30%;
+    right: 35%;
+    width: 34px;
+}
+
+.pos-8 {
+    top: 85%;
+    left: 90%;
+    width: 78px;
+}
+
+.pos-9 {
+    bottom: 15%;
+    left: 50%;
+    width: 50px;
+}
+
+/*  Dashboard Header  */
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+}
+
+.dashboard-header h1 {
+    font-size: 2.5rem;
+    margin: 0;
+}
+/*  Dropzone Styling  */
+.dropzone {
+    padding: 40px 20px;
+    border: 2px dashed #e0e0e0;
+    border-radius: 12px;
+    background-color: #fafafa;
+    text-align: center;
+    color: #6c757d;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 2.5rem;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+/*  Delete Card Button Styling  */
+.delete-card-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    /* Makes it a circle */
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    line-height: 1;
+    z-index: 10;
+
+    /* Hidden by default */
+    opacity: 0;
+    transform: scale(0.8);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Show the button when hovering over the card container */
+.card-container:hover .delete-card-button {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.delete-card-button:hover {
+    background-color: #ff4d4d;
+    /* Red on hover */
+}
+/* This style applies when a user is dragging a file over the area */
+.dropzone.active {
+    border-color: #0075BE;
+    background-color: #eef8ff;
+}
+.add-card-button {
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: bold;
+    background: linear-gradient(to bottom, #ff0000 50%, #ffffff 50%);
+    color: rgb(0, 0, 0);
+    border:rgb(0, 0, 0);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+.add-card-button:hover {
+    transform: translateY(-2px);
+    background-color: #005a92;
+}
+
+/*  Responsive Card Grid */
+.card-grid {
+    display: grid;
+    /* Creates a responsive grid that fits as many columns as possible */
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 2rem;
+}
+
+/*  Individual Card Styling  */
+.card-container {
+    position: relative;
+    /* Needed for the absolute price box */
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-image {
+    width: 100%;
+    display: block;
+}
+
+/*  Card Hover Effects  */
+.card-container:hover {
+    transform: scale(1.05) translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.price-hover-box {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    width: 75px;
+    height: 35px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    /* Hidden by default */
+    transform: translateY(10px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.card-container:hover .price-hover-box {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/*  Card Details Modal  */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 2.5rem;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    font-size: 2rem;
+}
+
+.close-modal-button {
+    margin-top: 1.5rem;
+    padding: 10px 25px;
+    font-size: 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    background-color: #f8f9fa;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.close-modal-button:hover {
+    background-color: #e0e0e0;
+    border-color: #ccc;
+}

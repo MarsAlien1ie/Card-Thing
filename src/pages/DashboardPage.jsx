@@ -1,18 +1,20 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import './DashboardPage.css';
 import { useDropzone } from 'react-dropzone';
-import {v4 as uuidv4} from 'uuid'
+import { v4 as uuidv4 } from 'uuid';
+import { useNavigate } from 'react-router-dom';
 import pokeball from '../images/pokeball.png';
 
 function DashboardPage() {
     // 'isModalOpen' is a state variable that tracks if the details pop-up is visible
     // 'setIsModalOpen' is the function I use to update its value (true/false)
     const [isModalOpen, setIsModalOpen] = useState(false);
-    // 'cards' is the state variable that holds the  array of card objects
+    // 'cards' is the state variable that holds the  array of card objects
     // 'setCards' adds/removes cards from the array
     const [cards, setCards] = useState([])
+    const navigate = useNavigate(); // NEW: Initialize the navigate hook
 
-    //  Drag-and-Drop  
+    //  Drag-and-Drop  
     // 'onDrop' is a function that runs when a user drops a file onto the dropzone
     const onDrop = useCallback(acceptedFiles => {
         acceptedFiles.forEach(file => {
@@ -60,21 +62,35 @@ function DashboardPage() {
         // Create a new array without the card that matches the ID
         setCards(prevCards => prevCards.filter(card => card.id !== cardIdToDelete));
     };
+
+    const handleLogout = () => {
+        // Add your authentication logic here
+        // I guess that's clearing local storage.
+        // Example: localStorage.removeItem('userToken');
+        console.log("User logging out...");
+        // Redirect to the login page
+        navigate('/');
+    };
+
     return (
         <div className='dashboard-container'>
-                   <img className="pokeball-decoration pos-1" src={pokeball} alt="" />
-                    <img className="pokeball-decoration pos-1" src={pokeball} alt="" />
-                    <img className="pokeball-decoration pos-2" src={pokeball} alt="" />
-                    <img className="pokeball-decoration pos-3" src={pokeball} alt="" />
-                    <img className="pokeball-decoration pos-4" src={pokeball} alt="" />
-                    <img className="pokeball-decoration pos-5" src={pokeball} alt="" />
-                    <img className="pokeball-decoration pos-6" src={pokeball} alt="" />
-                    <img className="pokeball-decoration pos-7" src={pokeball} alt="" />
-                    <img className="pokeball-decoration pos-8" src={pokeball} alt="" />
-                    <img className="pokeball-decoration pos-9" src={pokeball} alt="" />
+            <img className="pokeball-decoration pos-1" src={pokeball} alt="" />
+            <img className="pokeball-decoration pos-1" src={pokeball} alt="" />
+            <img className="pokeball-decoration pos-2" src={pokeball} alt="" />
+            <img className="pokeball-decoration pos-3" src={pokeball} alt="" />
+            <img className="pokeball-decoration pos-4" src={pokeball} alt="" />
+            <img className="pokeball-decoration pos-5" src={pokeball} alt="" />
+            <img className="pokeball-decoration pos-6" src={pokeball} alt="" />
+            <img className="pokeball-decoration pos-7" src={pokeball} alt="" />
+            <img className="pokeball-decoration pos-8" src={pokeball} alt="" />
+            <img className="pokeball-decoration pos-9" src={pokeball} alt="" />
             <header className="dashboard-header">
                 <h1>My Collection</h1>
-                <button className="add-card-button" onClick={open}>+ Add New Card</button>
+                {/* Wrap buttons in a container for better layout */}
+                <div className="header-buttons">
+                    <button className="add-card-button" onClick={open}>+ Add New Card</button>
+                    <button className="logout-button" onClick={handleLogout}>Log Out</button> {/* NEW: Logout Button */}
+                </div>
             </header>
             {/* This is the dropzone element that was missing */}
             <div {...getRootProps()} className={`dropzone ${isDragActive ? 'active' : ''}`}>
@@ -86,7 +102,7 @@ function DashboardPage() {
                         <p>Drag 'n' drop a PNG file here</p>
                 }
             </div>
-            {/*  displays all the cards */}
+            {/*  displays all the cards */}
             <div className="card-grid">
                 {/* loops through the cards array and create a div for each card*/}
                 {cards.map((card) => (
@@ -98,7 +114,7 @@ function DashboardPage() {
                             className="delete-card-button"
                             onClick={(e) => handleDeleteCard(e, card.id)}>
                             &times;
-                        </button>
+                            </button>
                         <img src={card.imageUrl} alt={card.name} className="card-image" onClick={() => handleCardClick(card)} />
                         {/* The placeholder box for the price */}
                         <div className="price-hover-box">

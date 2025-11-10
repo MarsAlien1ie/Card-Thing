@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <chrono>
 
 using json = nlohmann::json;
 using namespace std;
@@ -167,6 +168,7 @@ CardInfo readCardFromJson(const string& path = "../image-model/detected_card.jso
     f >> data;
     f.close(); //get all the data and close
 
+    /*
     CardInfo card;
     card.id = data["id"];
     card.name = data["name"];
@@ -176,6 +178,18 @@ CardInfo readCardFromJson(const string& path = "../image-model/detected_card.jso
     card.evoStage = data.contains("subtypes") ? data["subtypes"][0] : "Basic";
     card.types = data.contains("types") ? data["types"][0] : "Unknown";
     card.rarity = data.contains("rarity") ? data["rarity"] : "Unknown";
+    */
+
+    CardInfo card;
+    card.id = data.value("id", "");
+    card.name = data.value("name", "");
+    card.set_name = data.value("set_name", "");
+    card.image_url = data.value("image_url", "");
+    card.hp = stoi(data.value("hp", "0"));
+    card.evoStage = data.value("subtypes", "Basic");
+    card.types = data.value("types", "Unknown");
+    card.rarity = data.value("rarity", "Unknown");
+    
     return card; //returning the card info, some info may be missing and have defaults
 }
 
@@ -227,7 +241,7 @@ void insertCardToDB(const CardInfo& card, double price, const string& catalogID)
 }
 
 
-
+/*
 void getCardInfo(CardInfo &card) 
 {
     CURL* curl = curl_easy_init();
@@ -315,6 +329,8 @@ void getCardInfo(CardInfo &card)
     curl_slist_free_all(headers);
 }
 
+*/
+
 
 int main(int argc, char* argv[]) 
 {
@@ -326,12 +342,18 @@ int main(int argc, char* argv[])
 
     string jsonPath = argv[1];
     string catalogID = argv[2];
-
+    
+    
+    cout<<"Starting readind the card from the file"<<endl;
+    auto now = std::chrono::system_clock::now();
     CardInfo card = readCardFromJson(jsonPath);
-    cout << "Processing card: " << card.name << " (" << card.set_name << ")\n";
-    //if the processor got the wrong card, this will also show cearly
+    auto end = std::chrono::system_clock::now();
+    std::chrono::duration<double> time = end - now;
+    cout << "Time taken to read card info: "<< time.count()<<endl;
 
-    getCardInfo(card);
+
+    cout << "Ending reading the card: " << card.name << " (" << card.set_name << ")\n"; //this is purely for testing time it takes to read card info
+    //if the processor got the wrong card, this will also show cearly
 
     double price = fetchCardPrice(card.id, card.name, card.set_name);
     cout << "Price fetched: $" << price << endl;

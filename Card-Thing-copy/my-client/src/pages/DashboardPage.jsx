@@ -95,10 +95,34 @@ function DashboardPage() {
     setIsModalOpen(false);
   };
 
-  const handleDeleteCard = (event, cardIdToDelete) => {
-    event.stopPropagation();
-    setCards(prevCards => prevCards.filter(card => card.CardID !== cardIdToDelete));
-  }; //future deletion for cards (will fix for final)
+  const handleDeleteCard = async (event, cardIdToDelete) => {
+    event.stopPropagation(); // prevent modal popup
+
+    try 
+    {
+      const response = await fetch(`http://localhost:3001/deleteCard/${cardIdToDelete}`, 
+      {
+        method: "DELETE", //sends delete to backend
+      });
+
+      if (!response.ok) 
+      {
+        const data = await response.json();
+        alert(`Failed to delete card: ${data.error || response.statusText}`);
+        return;
+      }
+
+      // remove the card from the dashboard UI
+      setCards(prevCards => prevCards.filter(card => card.CardID !== cardIdToDelete));
+
+      console.log(`🗑️ Card ${cardIdToDelete} removed from dashboard`); //for testing to see if right card was deleted
+    } 
+    catch (error) 
+    {
+      console.error("Error deleting card:", error);
+    }
+  };
+
 
   const handleLogout = () => {
         // Add your authentication logic here
@@ -136,28 +160,16 @@ function DashboardPage() {
 
       {/*UI of the card and interactivity*/}
       <div className="card-grid">
-        {cards.map((card) => (
-          <div
-            key={card.CardID || uuidv4()}
-            className="card-container"
-          >
-            <button
-              className="delete-card-button"
-              onClick={(e) => handleDeleteCard(e, card.CardID)}
+        {cards.map((card) => ( //unique key for each card is mapped, no longer need uuidv4 i believe
+          <div key={card.CardID} className="card-container"> 
+            <button className="delete-card-button"
+              onClick={(e) => handleDeleteCard(e, card.CardID)} //when user clicks the X button
             >
               &times;
             </button>
-
-            {/* display a clean copy of the card from the tcg url */}
-            <img
-              src={card.ImageURL}
-              alt={card.PokeName}
-              className="card-image"
-              onClick={() => handleCardClick(card)}
-            />
-
-            <div className="price-hover-box"> {/*convert price to a float*/}
-              ${card.UngradedPrice ? parseFloat(card.UngradedPrice).toFixed(2) : "?"}
+            <img src={card.ImageURL} alt={card.PokeName} className="card-image" onClick={() => handleCardClick(card)}/> {/* display a clean copy of the card from the tcg url */}
+            <div className="price-hover-box">
+              ${Number(card.UngradedPrice).toFixed(2)} {/*convert price to a float*/}
               {/*this hover box doesn't look too good, in the css, make it prettier*/}
             </div>
           </div>

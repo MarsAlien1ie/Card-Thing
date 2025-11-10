@@ -210,7 +210,7 @@ app.post("/upload", upload.single("cardImage"), (req, res) => {
                 return res.status(500).json({ error: "C++ processing failed" });
               }
 
-              console.log("💾 C++ Output:", cppOut);
+              console.log("C++ Output:", cppOut);
 
               //step 4, fetch latest inserted card
               db.query(
@@ -270,6 +270,28 @@ app.get("/userCards", (req, res) => {
   });
 });
 
+
+
+//delete card logic by cardID
+app.delete("/deleteCard/:cardId", (req, res) => {
+  const cardId = req.params.cardId; //get the cardID
+
+  const query = "DELETE FROM CARDS WHERE CardID = ?"; //query to find the card in the database and will delete it
+  db.query(query, [cardId], (err, result) => {
+    if (err) 
+    {
+      console.error("Error deleting card:", err);
+      return res.status(500).json({ error: "Database delete failed" });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Card not found" }); //cards should be in the dashboard, possibly a fetching issue
+    }
+
+    console.log(`Card ${cardId} deleted successfully`);
+    res.status(200).json({ message: "Card deleted successfully" });
+  });
+});
 
 
 

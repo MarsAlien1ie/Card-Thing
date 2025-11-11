@@ -12,6 +12,14 @@ function DashboardPage() {
     // 'cards' is the state variable that holds the  array of card objects
     // 'setCards' adds/removes cards from the array
     const [cards, setCards] = useState([])
+
+    //for search input
+    const [searchCard, setSearchCard] = useState("");
+    //for price sort
+    const [sortOrder, setSortOrder] = useState("none");
+    //for type dropdown
+    const [selectedType, setSelectedType] = useState("all");
+
     const navigate = useNavigate(); // NEW: Initialize the navigate hook
 
     //  Drag-and-Drop  
@@ -72,6 +80,37 @@ function DashboardPage() {
         navigate('/');
     };
 
+    let filteredAndSortedCards = [...cards];
+
+    // This logic will work once u add card attributes like 'name', 'type', and 'price'
+
+    // Apply Search Filter
+    if (searchCard) {
+        filteredAndSortedCards = filteredAndSortedCards.filter(card =>
+            card.name && card.name.toLowerCase().includes(searchCard.toLowerCase())
+        );
+    }
+
+    // Apply Type Filter
+    if (selectedType !== "all") {
+        filteredAndSortedCards = filteredAndSortedCards.filter(card =>
+            card.type === selectedType
+        );
+    }
+
+    // Apply Price Sort
+    if (sortOrder !== "none") {
+        filteredAndSortedCards.sort((a, b) => {
+            const priceA = a.price || 0;
+            const priceB = b.price || 0;
+
+            if (sortOrder === 'asc') {
+                return priceA - priceB;
+            } else {
+                return priceB - priceA;
+            }
+        });
+    }
     return (
         <div className='dashboard-container'>
             <img className="pokeball-decoration pos-1" src={pokeball} alt="" />
@@ -86,13 +125,46 @@ function DashboardPage() {
             <img className="pokeball-decoration pos-9" src={pokeball} alt="" />
             <header className="dashboard-header">
                 <h1>My Collection</h1>
-                {/* Wrap buttons in a container for better layout */}
+         
+                <div className="filter-controls">
+                    <input
+                        type="text"
+                        placeholder="Search Card..."
+                        className="search-input"
+                        value={searchCard}
+                        onChange={(e) => setSearchCard(e.target.value)}
+                    />
+                    <select
+                        size="1"
+                        className="type-select"
+                        value={selectedType}
+                        onChange={(e) => setSelectedType(e.target.value)}
+                    >
+                        <option value="all">All Types</option>
+                        <option value="Grass">Grass</option>
+                        <option value="Lightning">Lightning</option>
+                        <option value="Darkness">Darkness</option>
+                        <option value="Fairy">Fairy</option>
+                        <option value="Fire">Fire</option>
+                        <option value="Psychic">Psychic</option>
+                        <option value="Metal">Metal</option>
+                        <option value="Dragon">Dragon</option>
+                        <option value="Water">Water</option>
+                        <option value="Fighting">Fighting</option>
+                        <option value="Colorless">Colorless</option>
+                    </select>
+                    <button
+                        className="sort-button"
+                        onClick={() => setSortOrder(prev => (prev === 'asc' ? 'desc' : 'asc'))}
+                    >
+                        Sort by Price {sortOrder === 'asc' ? '↑' : sortOrder === 'desc' ? '↓' : ''}
+                    </button>
+                </div>
                 <div className="header-buttons">
                     <button className="add-card-button" onClick={open}>+ Add New Card</button>
                     <button className="logout-button" onClick={handleLogout}>Log Out</button> {/* NEW: Logout Button */}
-                </div>
+                </div>        
             </header>
-            {/* This is the dropzone element that was missing */}
             <div {...getRootProps()} className={`dropzone ${isDragActive ? 'active' : ''}`}>
                 <input {...getInputProps()} />
                 {
@@ -105,7 +177,7 @@ function DashboardPage() {
             {/*  displays all the cards */}
             <div className="card-grid">
                 {/* loops through the cards array and create a div for each card*/}
-                {cards.map((card) => (
+                {filteredAndSortedCards.map((card) => (
                     <div
                         key={card.id}
                         className="card-container"

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import './DashboardPage.css';
 import { useDropzone } from 'react-dropzone';
 import { useNavigate } from 'react-router-dom';
@@ -10,6 +10,13 @@ function DashboardPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [cards, setCards] = useState([]);
   const username = localStorage.getItem("username");
+
+  //for search input
+  const [searchCard, setSearchCard] = useState("");
+  //for price sort
+  const [sortOrder, setSortOrder] = useState("none");
+  //for type dropdown
+  const [selectedType, setSelectedType] = useState("all");
 
   //fetching card from backend on dashboard
   useEffect(() => {
@@ -30,6 +37,38 @@ function DashboardPage() {
     }
     fetchCards();
   }, [username]);
+
+
+  const filteredCards = useMemo(() => {
+  let results = [...cards]; //get all the cards
+
+  // searching by name
+  if (searchCard.trim() !== "") {
+    results = results.filter((card) =>
+      card.PokeName.toLowerCase().includes(searchCard.toLowerCase())
+    );
+  }
+
+  // searching by type
+  if (selectedType !== "all") {
+    results = results.filter((card) => card.Typing === selectedType);
+  }
+
+  // sort by price
+  if (sortOrder !== "none") {
+    results.sort((a, b) => {
+      const priceA = parseFloat(a.UngradedPrice);
+      const priceB = parseFloat(b.UngradedPrice);
+
+      if (isNaN(priceA) || isNaN(priceB)) return 0; //shouldn't happen, but just in case
+
+      return sortOrder === "asc" ? priceA - priceB : priceB - priceA; //generic sorting logic for asc and desc
+    });
+  }
+
+  return results;
+  }, [cards, searchCard, selectedType, sortOrder]);
+
 
   //file uploading
   const onDrop = useCallback(async (acceptedFiles) => 
@@ -133,6 +172,38 @@ function DashboardPage() {
         navigate('/');
   };
 
+  let filteredAndSortedCards = [...cards];
+
+    // This logic will work once u add card attributes like 'name', 'type', and 'price'
+
+    // Apply Search Filter
+  if (searchCard) {
+    filteredAndSortedCards = filteredAndSortedCards.filter(card =>
+        card.name && card.name.toLowerCase().includes(searchCard.toLowerCase())
+    );
+  }
+
+    // Apply Type Filter
+  if (selectedType !== "all") {
+      filteredAndSortedCards = filteredAndSortedCards.filter(card =>
+          card.type === selectedType
+      );
+  }
+
+    // Apply Price Sort
+  if (sortOrder !== "none") {
+      filteredAndSortedCards.sort((a, b) => {
+          const priceA = a.price || 0;
+          const priceB = b.price || 0;
+
+          if (sortOrder === 'asc') {
+              return priceA - priceB;
+          } else {
+              return priceB - priceA;
+          }
+      });
+  }
+
   return ( //UI layout + some logic
     <div className='dashboard-container'>
       <img className="pokeball-decoration pos-1" src={pokeball} alt="" />
@@ -147,6 +218,40 @@ function DashboardPage() {
 
       <header className="dashboard-header">
         <h1>My Collection</h1>
+        <div className="filter-controls">
+          <input
+              type="text"
+              placeholder="Search Cards..."
+              className="search-input"
+              value={searchCard}
+              onChange={(e) => setSearchCard(e.target.value)}
+          />
+          <select
+              size="1"
+              className="type-select"
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+          >
+            <option value="all">All Types</option>
+            <option value="Grass">Grass</option>
+            <option value="Lightning">Lightning</option>
+            <option value="Darkness">Darkness</option>
+            <option value="Fairy">Fairy</option>
+            <option value="Fire">Fire</option>
+            <option value="Psychic">Psychic</option>
+            <option value="Metal">Metal</option>
+            <option value="Dragon">Dragon</option>
+            <option value="Water">Water</option>
+            <option value="Fighting">Fighting</option>
+            <option value="Colorless">Colorless</option>
+          </select>
+          <button
+              className="sort-button"
+              onClick={() => setSortOrder(prev => prev === "none" ? "asc" : prev === "asc" ? "desc" : "none")}
+          >
+              Sort by Price {sortOrder === 'asc' ? '↑' : sortOrder === 'desc' ? '↓' : ''}
+          </button>
+        </div>
         <div className="header-buttons">
           <button className="add-card-button" onClick={open}>+ Add New Card</button>
           <button className="logout-button" onClick={handleLogout}>Log Out</button> {/* NEW: Logout Button */}
@@ -160,7 +265,7 @@ function DashboardPage() {
 
       {/*UI of the card and interactivity*/}
       <div className="card-grid">
-        {cards.map((card) => ( //unique key for each card is mapped, no longer need uuidv4 i believe
+        {filteredCards.map((card) => ( //unique key for each card is mapped, no longer need uuidv4 i believe
           <div key={card.CardID} className="card-container"> 
             <button className="delete-card-button"
               onClick={(e) => handleDeleteCard(e, card.CardID)} //when user clicks the X button

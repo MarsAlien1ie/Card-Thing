@@ -6,10 +6,11 @@ import json
 from PIL import Image
 from ultralytics import YOLO
 import sys
+import imutils
 
 #for pathing to the write spots
 #model_file = './best.pt'
-model_file = os.path.join(os.path.dirname(__file__), 'best.pt')
+model_file = os.path.join(os.path.dirname(__file__), 'new_best.pt')
 
 #db_file = 'updated_pokemon_card_database.csv'
 db_file = os.path.join(os.path.dirname(__file__), 'complete_pokemon_card_database.csv')

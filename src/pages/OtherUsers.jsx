@@ -17,9 +17,7 @@ const MOCK_USERS = [
   { id: 9, name: 'Tom', isLiked: false },
 ];
 
-/*
-  A single item in the user list
- */
+//Renders a single user card with a name + like heart button
 function UserItem({ user, onLikeToggle }) {
   return (
     <div className="user-item">
@@ -40,10 +38,13 @@ function UserItem({ user, onLikeToggle }) {
   The main page component for the User Gallery.
  */
 export default function OtherUsers() {
+  //Track which tab is selected (all users or liked users)
   const [activeTab, setActiveTab] = useState('all');
+  //List of users with their liked/unliked state
   const [users, setUsers] = useState(MOCK_USERS);
   const navigate = useNavigate();
 
+  //toggle the like state for a specific user by id
   const handleLikeToggle = (userId) => {
     setUsers(currentUsers =>
       currentUsers.map(user =>
@@ -78,14 +79,16 @@ export default function OtherUsers() {
                       Other Users
                   </button>
               </div>
-              {/* Tab Button Container */}
+              {/*Tab Button Container */}
               <div className="tab-container">
+                {/*Button to show all users*/}
                   <button
                       onClick={() => setActiveTab('all')}
                       className={`tab-button ${activeTab === 'all' ? 'active' : ''}`}
                   >
                       All Users
                   </button>
+                  {/*Button to show liked users*/}
                   <button
                       onClick={() => setActiveTab('liked')}
                       className={`tab-button ${activeTab === 'liked' ? 'active' : ''}`}
@@ -106,6 +109,7 @@ export default function OtherUsers() {
               />
             ))
           ) : (
+            /*If there are no users that match the tab filter, show a message*/
             <div className="empty-list-message">
               <p>
                 {activeTab === 'liked'

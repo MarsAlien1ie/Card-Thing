@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from "express";
 import cors from "cors";
 import { execFile } from "child_process";
@@ -7,17 +8,20 @@ import path from "path";
 import { fileURLToPath } from "url";
 import fs from "fs";
 import os from "os";
-import crypto from "crypto"; //to create a unique code for each image upload
+import crypto from "crypto";
 import bcrypt from "bcrypt";
+import { OAuth2Client } from "google-auth-library";
 
 
 
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
+
 
 app.use(cors());
 app.use(express.json());
@@ -26,12 +30,12 @@ const upload = multer({ dest: "uploads/" }); //this is where all uploaded cards 
 
 //connect to MySQL, info below
 const db = mysql.createConnection({
-  host: "127.0.0.1",
-  user: "root",
-  password: "noakhali12",
-  database: "POKEMON",
-  port: 3306
-});
+  host: process.env.DB_HOST,              // 127.0.0.1
+  port: Number(process.env.DB_PORT || 3306),
+  user: process.env.DB_USER,              // app
+  password: process.env.DB_PASS,          // AppPass123!
+  database: process.env.DB_NAME,          // POKEMON
+})
 
 db.connect((err) => { //connect to the database
   if (err) 
@@ -42,7 +46,71 @@ db.connect((err) => { //connect to the database
   }
 });
 
+
 // signups for new user logic
+app.post("/signup", async (req, res) => {
+  const { username, email, password } = req.body;
+
+  console.log("Signup request received:", username, email);
+
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // 1) check if username or email already exists
+    const checkQuery =
+      "SELECT UserID FROM USERS WHERE UserName = ? OR UserEmail = ?";
+
+    db.query(checkQuery, [username, email], (checkErr, checkResults) => {
+      if (checkErr) {
+        console.error("Error checking existing user:", checkErr);
+        return res.status(500).json({ message: "Database error" });
+      }
+
+      if (checkResults.length > 0) {
+        // user already exists
+        return res.status(409).json({ message: "User already exists" });
+      }
+
+      // 2) insert new user
+      const insertUser =
+        "INSERT INTO USERS (UserName, UserEmail, UserPassword) VALUES (?, ?, ?)";
+
+      db.query(
+        insertUser,
+        [username, email, hashedPassword],
+        (insertErr, insertResult) => {
+          if (insertErr) {
+            console.error("Error adding user:", insertErr);
+            return res.status(500).json({ message: "Database insert failed" });
+          }
+
+          const newUserId = insertResult.insertId;
+
+          // 3) create a catalog for this user (login code expects every user to have one)
+          const insertCatalog =
+            "INSERT INTO CATALOG (OwnerID) VALUES (?)";
+
+          db.query(insertCatalog, [newUserId], (catErr) => {
+            if (catErr) {
+              console.error("Error creating catalog:", catErr);
+              return res
+                .status(500)
+                .json({ message: "Catalog creation failed" });
+            }
+
+            // all good
+            res.status(200).json({ message: "Signup successful!" });
+          });
+        }
+      );
+    });
+  } catch (err) {
+    console.error("Error hashing password:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
+/*
 app.post("/signup", async (req, res) => {
   const { username, email, password } = req.body;
 
@@ -51,7 +119,10 @@ app.post("/signup", async (req, res) => {
   {
     const hashedPassword = await bcrypt.hash(password, 10); //put the password through 10 salt rounds
    
-    execFile("./my-server/build/newUser", [username, email, hashedPassword], (error, stdout, stderr) => { //calling the executable file for signups
+
+    //change back for connecting db to frontend
+
+    execFile (path.join(__dirname, "build", "newUser"), [username, email, hashedPassword], (error, stdout, stderr) => { //calling the executable file for signups
       console.log("C++ Output:", stdout); //testing to make sure it reaches the c++ code
 
       if (error) 
@@ -74,7 +145,7 @@ app.post("/signup", async (req, res) => {
     res.status(500).json({ message: "Internal server error" }); //there ws a problem hashing the password (dont know what it would be, maybe db?)
   }
 });
-
+*/
 
 
 
@@ -136,6 +207,114 @@ app.post("/login", (req, res) => {
   });
 });
 
+
+// Google login 
+app.post("/auth/google", async (req, res) => {
+  const { credential } = req.body; //get credential from the frontend
+
+  if (!credential) {
+    return res.status(400).json({ message: "No Google credential" }); //client sent bad login info 
+  }
+
+  try {
+    //verify token with Google
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();  //user data from google
+    const email = payload.email;          //user email
+    const name = payload.name;            //user name
+
+    //check if this google user already exists in USERS
+    db.query("SELECT * FROM USERS WHERE UserEmail = ?", [email], (err, results) => 
+    {
+      if (err) 
+      {
+        console.error("Database error (Google user check):", err);
+        return res.status(500).json({ message: "Database error" });
+      }
+
+     // if the user exists
+      if (results.length > 0) 
+      {
+        const user = results[0]; //save the user
+
+        // get the user's CatalogID and confirm which specific user data is loaded
+        db.query("SELECT CatalogID FROM CATALOG WHERE OwnerID = ?", [user.UserID], (catErr, catResults) => 
+        {
+          if (catErr || catResults.length === 0) 
+          {
+            console.error("No catalog found for Google user:", email);
+            return res.status(404).json({ message: "Catalog not found" });
+          }
+
+          const catalogID = catResults[0].CatalogID;
+
+          //send back both user info and catalog ID
+          return res.status(200).json({
+            message: "Login successful",
+            user,
+            catalogID,
+          });
+        });
+      } 
+      else 
+      {
+        //If there is a new user,
+        db.query(
+          "INSERT INTO USERS (UserName, UserEmail, UserPassword) VALUES (?, ?, ?)",
+          [name, email, ""], //no password for the google users 
+          (insertErr, insertResult) => 
+          {
+            if (insertErr) 
+            {
+              console.error("Error adding Google user:", insertErr);
+              return res.status(500).json({ message: "DB insert failed" });
+            }
+
+            const newUserId = insertResult.insertId;
+
+            //create a catalog for the new user
+            db.query(
+              "INSERT INTO CATALOG (OwnerID) VALUES (?)",
+              [newUserId],
+              (catErr, catResult) => 
+              {
+                if (catErr) 
+                {
+                  console.error("Error creating catalog for Google user:", catErr);
+                  return res.status(500).json({ message: "Catalog creation failed" });
+                }
+
+                const user = {
+                  UserID: newUserId,  
+                  UserName: name,
+                  UserEmail: email,
+                };
+
+                const catalogID = catResult.insertId;
+
+                //send back both user info and catalog ID
+                return res.status(200).json({
+                  message: "Signup/login successful",
+                  user,
+                  catalogID,
+                });
+              }
+            );
+          }
+        );
+      }
+    });
+  } 
+  catch (err) 
+  {
+    console.error("Error verifying Google token:", err);
+    return res.status(401).json({ message: "Invalid Google token" });
+  }
+});
 
 
 //uploading logic, should disallow any uploads while one card is being uploaded already
@@ -292,8 +471,6 @@ app.delete("/deleteCard/:cardId", (req, res) => {
     res.status(200).json({ message: "Card deleted successfully" });
   });
 });
-
-
 
 
 

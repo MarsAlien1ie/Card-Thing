@@ -3,17 +3,56 @@ import {Link, useNavigate} from 'react-router-dom'
 import "./LoginPage.css";
 import pikachuImage from "../images/pikachu.png";
 import pokeball from "../images/pokeball.png";
+import { GoogleLogin } from "@react-oauth/google";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
+  //talks to backend for google oauth
+ const handleGoogleSuccess = async (credentialResponse) => {
+  try {
+    const res = await fetch("http://localhost:8000/auth/google", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        credential: credentialResponse.credential,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      console.log("Google user:", data.user);
+
+      //save the username
+      localStorage.setItem("username", data.user.UserName);
+      navigate("/dashboard");
+    } else {
+      alert("Google login failed: " + data.message);
+    }
+
+    //failed to fetch the data
+  } catch (err) {
+    console.error("Google login processing error:", err);
+    alert("Google login failed");
+  }
+};
+
+
+  //error 
+  const handleGoogleError = () => {
+    console.log("Google login failed");
+    alert("Google login failed");
+  };
+
+
   const handleLogin = async (e) => { //login function handler
     e.preventDefault();
     try 
-    {
-      const res = await fetch("http://localhost:3001/login", //connect to backend
+    {                                     //changed to my database 8000
+      const res = await fetch("http://localhost:8000/login", //connect to backend
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -68,10 +107,19 @@ const LoginPage = () => {
         </div>
 
         <button type="submit" className="login-button">
-          Login
+        Login
         </button>
 
         <div className="separator">or</div>
+
+        {/* The google login button */}
+        <div className="google-login-wrapper">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={handleGoogleError}
+          />
+        </div>
+
         <p className="signup-link">
           Don't have an account? <Link to="/signup">Sign Up</Link>
         </p>

@@ -1,0 +1,113 @@
+/*  Main Page Styles  */
+.other-users-page {
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(155deg,
+                #FFF176 0%,
+                #FFD54F 40%,
+                #c0dfee 60%,
+                #7BD5FF 100%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    padding: 2rem;
+    font-family: sans-serif;
+}
+
+.container {
+    max-width: 56rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* --- Tab Navigation --- */
+.tab-container {
+    display: flex;
+    justify-content: center;
+    border-radius: 0.5rem;
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 0.25rem;
+    margin-right: 825px;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    transition: all 0.3s;
+    border: none;
+    background: none;
+    color: #4b5563;
+    cursor: pointer;
+}
+
+.tab-button:hover {
+    background-color: #d1d5db;
+}
+
+.tab-button.active {
+    background-color: #ffffff;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    color: #2563eb;
+}
+
+/*  User List  */
+.user-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.empty-list-message {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: #6b7280;
+    font-size: 1.25rem;
+}
+
+/*  User Item  */
+.user-item {
+    background-color: #ffffff;
+    border-radius: 0.5rem;
+
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.3s;
+}
+
+.user-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: black;
+}
+
+.like-button {
+    padding: 0.5rem;
+    border-radius: 9999px;
+    transition: background-color 0.3s;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+.like-button:hover {
+    background-color: #fee2e2;
+}
+
+.like-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    transition: all 0.3s;
+    color: #9ca3af;
+    fill: none;
+}
+
+.like-button:hover .like-icon {
+    color: #f87171;
+}
+
+.like-icon.liked {
+    color: red;
+    fill: red;
+}

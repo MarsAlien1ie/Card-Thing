@@ -124,8 +124,19 @@ function DashboardPage() {
             <img className="pokeball-decoration pos-8" src={pokeball} alt="" />
             <img className="pokeball-decoration pos-9" src={pokeball} alt="" />
             <header className="dashboard-header">
-                <h1>My Collection</h1>
-         
+                {/* Ashish new changes from here*/}
+                <div className="header-main-nav">
+                    <button
+                        className="nav-button active"
+                        onClick={() => navigate('/dashboard')}>
+                        My Collection
+                    </button>
+                    <button className="nav-button"
+                        onClick={() =>navigate('/users')}>
+                        Other Users
+                    </button>
+                </div>
+                {/* to here*/}
                 <div className="filter-controls">
                     <input
                         type="text"

@@ -13,8 +13,8 @@ const SignPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault(); // prevent page reload
 
-    try { // signup set to backend and sent to database
-      const response = await fetch("http://localhost:3001/signup", 
+    try { // signup set to backend and sent to database 
+      const response = await fetch("http://localhost:8000/signup",  //changed to 8000 on ethans
         {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -124,3 +124,59 @@
 .signup-link a:hover {
     text-decoration: underline;
 }
+
+.pos-1 {
+    top: 12%;
+    left: 10%;
+    width: 70px;
+}
+
+.pos-2 {
+    top: 5%;
+    right: 15%;
+    width: 50px;
+}
+
+.pos-3 {
+    top: 70%;
+    left: 15%;
+    width: 70px;
+}
+
+.pos-4 {
+    top: 80%;
+    left: 5%;
+    width: 100px;
+}
+
+.pos-5 {
+    top: 10%;
+    left: 45%;
+    width: 40px;
+}
+
+.pos-6 {
+    top: 35%;
+    right: 45%;
+    width: 70px;
+    z-index:-1;
+}
+
+.pos-7 {
+    top: 30%;
+    right: 35%;
+    width: 34px;
+    z-index:-1;
+}
+
+.pos-8 {
+    top: 85%;
+    left: 90%;
+    width: 78px;
+}
+
+.pos-9 {
+    bottom: 15%;
+    left: 50%;
+    width: 50px;
+}

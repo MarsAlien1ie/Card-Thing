@@ -4,6 +4,9 @@ import LoginPage from "./pages/LoginPage";
 import SignPage from "./pages/SignPage";
 import { Routes, Route } from "react-router-dom";
 import DashboardPage from "./pages/DashboardPage";
+import OtherUsers from "./pages/OtherUsers";
+import UserCatalog from "./pages/UserCatalog";
+
 
 function App() {
   return (
@@ -12,6 +15,8 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignPage />} />
       <Route path="/dashboard" element={<DashboardPage/>}/>
+      <Route path="/users" element={<OtherUsers/>}/>
+      <Route path="/catalog/:userId" element={<UserCatalog />} />
     </Routes>
   );
 }

@@ -25,6 +25,7 @@ const LoginPage = () => {
         alert("Login successful!");
         console.log("Logged in user:", data.user); //for testing purposes
         localStorage.setItem("username", data.user.UserName);
+        localStorage.setItem("userID", data.user.UserID);
         navigate('/dashboard'); //redirect to dashboard
       } 
       else 
@@ -41,6 +42,15 @@ const LoginPage = () => {
 
   return ( //login page UI (Danylo)
     <div className="login-page-container">
+      <div className="background-decorations">
+                <img className="pokeball-decoration pos-1" src={pokeball} alt="" />
+                <img className="pokeball-decoration pos-2" src={pokeball} alt="" />
+                <img className="pokeball-decoration pos-4" src={pokeball} alt="" />
+                <img className="pokeball-decoration pos-5" src={pokeball} alt="" />
+                <img className="pokeball-decoration pos-6" src={pokeball} alt="" />
+                <img className="pokeball-decoration pos-7" src={pokeball} alt="" />
+                <img className="pokeball-decoration pos-8" src={pokeball} alt="" />
+            </div>
       <form className="login-card" onSubmit={handleLogin}>
         <img src={pikachuImage} alt="Pikachu" className="pikachu-peeking" />
         <h1>Card Cataloger</h1>

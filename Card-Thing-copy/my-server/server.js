@@ -295,6 +295,129 @@ app.delete("/deleteCard/:cardId", (req, res) => {
 
 
 
+// getting all users for the otherusers page
+app.get("/allUsers", (req, res) => {
+  const query = "SELECT UserID, UserName FROM USERS";
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error("Failed to load users:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+
+    res.json(results);
+  });
+});
+
+
+
+app.get("/catalogById/:id", (req, res) => { //the page names have to be differentiated by their userid
+  const userId = req.params.id;
+
+  //gets the cards of the user with the clicked on userID
+  const userQuery = "SELECT UserName FROM USERS WHERE UserID = ?"; 
+  const cardsQuery = `
+    SELECT cr.*
+    FROM CATALOG c
+    JOIN CARDS cr ON c.CatalogID = cr.CatalogID
+    WHERE c.OwnerID = ?;
+  `;
+
+  db.query(userQuery, [userId], (err, userResults) => {
+    if (err || userResults.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const username = userResults[0].UserName;
+
+    db.query(cardsQuery, [userId], (err2, cardResults) => {
+      if (err2) {
+        return res.status(500).json({ error: "Database error" });
+      }
+
+      res.json({
+        username,
+        cards: cardResults,
+      });
+    });
+  });
+});
+
+
+app.get("/likedUsers", (req, res) => { //liking user logic for getching
+  const { username } = req.query;
+
+  if (!username)
+    return res.status(400).json({ error: "Username is required" });
+
+  const q1 = "SELECT UserID FROM USERS WHERE UserName = ?";
+  db.query(q1, [username], (err, results) => {
+    if (err || results.length === 0)
+      return res.status(404).json({ error: "User not found" });
+
+    const userID = results[0].UserID;
+
+    //new table for getting the liked users of the logged in one
+    const q2 = `
+      SELECT u.UserID, u.UserName
+      FROM LIKES l
+      JOIN USERS u ON l.LikedUserID = u.UserID
+      WHERE l.LikerID = ?;
+    `;
+
+    db.query(q2, [userID], (err2, liked) => {
+      if (err2)
+        return res.status(500).json({ error: "DB error" });
+
+      res.json(liked);
+    });
+  });
+});
+
+
+
+app.post("/likeUser", (req, res) => { //liking user logic for posting
+  const { likerUsername, likedUserId } = req.body;
+
+  const getUser = "SELECT UserID FROM USERS WHERE UserName = ?";
+  db.query(getUser, [likerUsername], (err, results) => {
+    if (err || results.length === 0)
+      return res.status(404).json({ error: "User not found" });
+
+    const likerID = results[0].UserID;
+
+    const insert = "INSERT IGNORE INTO LIKES (LikerID, LikedUserID) VALUES (?, ?)"; //userid and the liked user's id is inserted
+    db.query(insert, [likerID, likedUserId], (err2) => {
+      if (err2) return res.status(500).json({ error: "Failed to like" });
+      res.json({ success: true });
+    });
+  });
+});
+
+
+app.delete("/unlikeUser", (req, res) => { //unliking user logic for deleting
+  const { likerUsername, likedUserId } = req.body;
+
+  const getUser = "SELECT UserID FROM USERS WHERE UserName = ?"; //get the userID of the logged in user
+  db.query(getUser, [likerUsername], (err, results) => {
+    if (err || results.length === 0)
+      return res.status(404).json({ error: "User not found" });
+
+    const likerID = results[0].UserID;
+
+    const del = "DELETE FROM LIKES WHERE LikerID = ? AND LikedUserID = ?"; //find the user you are unliking and delete that perosn
+    db.query(del, [likerID, likedUserId], (err2) => {
+      if (err2) return res.status(500).json({ error: "Failed to unlike" });
+      res.json({ success: true });
+    });
+  });
+});
+
+
+
+
+
+
 
 
 //this is all unused, just to see originally if the backend is actually connected

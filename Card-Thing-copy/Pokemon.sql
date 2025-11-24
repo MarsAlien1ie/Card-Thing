@@ -33,6 +33,16 @@ CREATE TABLE POKEMON.CARDS (
 );
 
 
+CREATE TABLE LIKES (
+    LikeID INT AUTO_INCREMENT PRIMARY KEY,
+    LikerID INT NOT NULL,
+    LikedUserID INT NOT NULL,
+    CONSTRAINT fk_liker FOREIGN KEY (LikerID) REFERENCES USERS(UserID) ON DELETE CASCADE,
+    CONSTRAINT fk_liked FOREIGN KEY (LikedUserID) REFERENCES USERS(UserID) ON DELETE CASCADE
+);
+
+
+
 INSERT INTO POKEMON.USERS (UserName, UserEmail, UserPassword) VALUES ('Ash', 'Ash@gmail.com', 'Ash123!');
 INSERT INTO POKEMON.USERS (UserName, UserEmail, UserPassword) VALUES ('Misty', 'Misty@gmail.com', 'Misty123!');
 INSERT INTO POKEMON.USERS (UserName, UserEmail, UserPassword) VALUES ('Brock', 'Brock@gmail.com', 'Brock123!');

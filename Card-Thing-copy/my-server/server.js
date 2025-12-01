@@ -37,7 +37,9 @@ db.connect((err) => { //connect to the database
   if (err) 
   {
     console.error("Database connection failed:", err);
-  } else {
+  } 
+  else 
+  {
     console.log("Connected to MySQL database");
   }
 });
@@ -50,7 +52,7 @@ app.post("/signup", async (req, res) => {
   try 
   {
     const hashedPassword = await bcrypt.hash(password, 10); //put the password through 10 salt rounds
-   
+
     execFile("./my-server/build/newUser", [username, email, hashedPassword], (error, stdout, stderr) => { //calling the executable file for signups
       console.log("C++ Output:", stdout); //testing to make sure it reaches the c++ code
 
@@ -64,8 +66,8 @@ app.post("/signup", async (req, res) => {
         console.error("Error adding user:", stderr);
         return res.status(500).json({ message: "Database insert failed" }); //other weird error occurs, testing purposes
       }
-      res.status(200).json({ message: "Signup successful!" }); 
-      }
+      res.status(200).json({ message: "Signup successful!" });
+    }
     );
   }
   catch (err) 
@@ -83,8 +85,7 @@ app.post("/login", (req, res) => {
   const { username, password } = req.body;
 
   const query = "SELECT * FROM USERS WHERE UserName = ?"; //finding by the username this time because the password is hashed
-  db.query(query, [username], async (err, results) => 
-  {
+  db.query(query, [username], async (err, results) => {
     if (err) 
     {
       console.error("Database error:", err); //error that shouldnt happen, probably unconnected db
@@ -98,7 +99,8 @@ app.post("/login", (req, res) => {
 
     const user = results[0]; //save the user
 
-    try { //comparing input password with hashed password
+    try 
+    { //comparing input password with hashed password
       const passwordMatch = await bcrypt.compare(password, user.UserPassword);
 
       if (!passwordMatch) 
@@ -110,7 +112,7 @@ app.post("/login", (req, res) => {
 
       // get the user's catalogid after login
       const catalogQuery = "SELECT CatalogID FROM CATALOG WHERE OwnerID = ?";
-      
+
       db.query(catalogQuery, [user.UserID], (catErr, catResults) => {
         if (catErr || catResults.length === 0) 
         {
@@ -119,7 +121,7 @@ app.post("/login", (req, res) => {
         }
 
         const catalogID = catResults[0].CatalogID;
-        
+
         //send back both user info and catalog ID
         res.status(200).json({
           message: "Login successful",
@@ -127,9 +129,8 @@ app.post("/login", (req, res) => {
           catalogID,
         });
       });
-    } 
-    catch (err) 
-    {
+    }
+    catch (err) {
       console.error("Error comparing passwords:", err);
       res.status(500).json({ message: "Internal server error" }); //some error with the hashing function
     }
@@ -146,7 +147,7 @@ app.post("/upload", upload.single("cardImage"), (req, res) => {
   // make sure the correct user's catalog is being uploaded into, using username for now as a connector
   const username = req.body.username;
   console.log("Received upload from user:", username);
-  
+
   const jobId = crypto.randomBytes(8).toString("hex"); //creating a unique job id for each image upload
   const jobDir = path.join(__dirname, "temp", jobId); //make the unique path name
   fs.mkdirSync(jobDir, { recursive: true });
@@ -155,79 +156,102 @@ app.post("/upload", upload.single("cardImage"), (req, res) => {
 
   // first, run Python predictor
   execFile("python3", [path.join(__dirname, "image-model", "predictor.py"), filePath, jsonPath], (pyErr, pyOut, pyErrOut) => { //file path to the code
-      if (pyErr) 
+    if (pyErr) 
+    {
+      // if predictor exited with code 3 then there was no detection
+      if (pyErr.code === 3) 
       {
-        // if predictor exited with code 3 then there was no detection
-        if (pyErr.code === 3) 
-        {
-          console.error("No card detected in image.");
-          fs.rm(jobDir, { recursive: true, force: true }, () => {});
-          return res.status(400).json({ error: "No card detected" });
-        }
-        console.error("Python error:", pyErrOut || pyErr.message);
-        fs.rm(jobDir, { recursive: true, force: true }, () => {});
-        return res.status(500).json({ error: "Python processing failed" });
+        console.error("No card detected in image.");
+        fs.rm(jobDir, { recursive: true, force: true }, () => { });
+        return res.status(400).json({ error: "No card detected" });
+      }
+      console.error("Python error:", pyErrOut || pyErr.message);
+      fs.rm(jobDir, { recursive: true, force: true }, () => { });
+      return res.status(500).json({ error: "Python processing failed" });
+    }
+
+    console.log("Python output:", pyOut);
+
+    // checking the JSON for this job exists
+    if (!fs.existsSync(jsonPath)) 
+    {
+      console.error("Predictor did not write JSON."); //this is probably a false card or processor didnt detect it
+      fs.rm(jobDir, { recursive: true, force: true }, () => { });
+      return res.status(400).json({ error: "No detected card JSON" }); //no jsons for bad card reads
+    }
+
+    // step 2, get catalog ID for this user
+    const userQuery = "SELECT UserID FROM USERS WHERE UserName = ?";  //using username as a connector for this for now
+    db.query(userQuery, [username], (userErr, userResults) => {
+      if (userErr || userResults.length === 0) 
+      {
+        console.error("Could not find user:", userErr);
+        fs.rm(jobDir, { recursive: true, force: true }, () => { });
+        return res.status(404).json({ error: "User not found" }); //user may not be in the database for some reason even though logged in, probably a database issue
       }
 
-      console.log("Python output:", pyOut);
-
-      // checking the JSON for this job exists
-      if (!fs.existsSync(jsonPath)) 
-      {
-        console.error("Predictor did not write JSON."); //this is probably a false card or processor didnt detect it
-        fs.rm(jobDir, { recursive: true, force: true }, () => {});
-        return res.status(400).json({ error: "No detected card JSON" }); //no jsons for bad card reads
-      }
-
-      // step 2, get catalog ID for this user
-      const userQuery = "SELECT UserID FROM USERS WHERE UserName = ?";  //using username as a connector for this for now
-      db.query(userQuery, [username], (userErr, userResults) => {
-        if (userErr || userResults.length === 0) 
+      const userID = userResults[0].UserID;
+      const catalogQuery = "SELECT CatalogID FROM CATALOG WHERE OwnerID = ?"; //get the catalog
+      db.query(catalogQuery, [userID], (catErr, catResults) => {
+        if (catErr || catResults.length === 0) 
         {
-          console.error("Could not find user:", userErr);
-          fs.rm(jobDir, { recursive: true, force: true }, () => {});
-          return res.status(404).json({ error: "User not found" }); //user may not be in the database for some reason even though logged in, probably a database issue
+          console.error("Could not find catalog:", catErr);
+          fs.rm(jobDir, { recursive: true, force: true }, () => { });
+          return res.status(404).json({ error: "Catalog not found" }); //database issue most likely
         }
 
-        const userID = userResults[0].UserID;
-        const catalogQuery = "SELECT CatalogID FROM CATALOG WHERE OwnerID = ?"; //get the catalog
-        db.query(catalogQuery, [userID], (catErr, catResults) => {
-          if (catErr || catResults.length === 0) 
-          {
-            console.error("Could not find catalog:", catErr);
-            fs.rm(jobDir, { recursive: true, force: true }, () => {});
-            return res.status(404).json({ error: "Catalog not found" }); //database issue most likely
-          }
+        const catalogID = catResults[0].CatalogID;
 
-          const catalogID = catResults[0].CatalogID;
-
-          //step 3, run c++ program with json path and catalogID
-          execFile(path.join(__dirname, "C++ Code", "processCard"), [jsonPath, catalogID.toString()],(cppErr, cppOut, cppErrOut) => {
-              if (cppErr) 
-              {
-                console.error("C++ error:", cppErrOut || cppErr.message); //couldnt get ot the c++ code
-                fs.rm(jobDir, { recursive: true, force: true }, () => {});
-                return res.status(500).json({ error: "C++ processing failed" });
-              }
-
-              console.log("C++ Output:", cppOut);
-
-              //step 4, fetch latest inserted card
-              db.query(
-                "SELECT * FROM CARDS ORDER BY CardID DESC LIMIT 1;",
-                (err, results) => {
-                  // cleanup
-                  fs.rm(jobDir, { recursive: true, force: true }, () => {}); //removing the temp file made for the job
-
-                  if (err) 
-                  {
-                    console.error("MySQL error:", err);
-                    return res.status(500).json({ error: "Database fetch failed" }); //database connection issue
-                  }
-                  res.status(200).json({ card: results[0] });
+        //step 3, run c++ program with json path and catalogID
+        execFile(
+          path.join(__dirname, "C++ Code", "processCard"), //run process card first
+          [jsonPath, catalogID.toString()],
+          (cppErr, cppOut, cppErrOut) => {
+            if (cppErr) 
+            {
+              console.error("C++ error:", cppErrOut || cppErr.message);
+              fs.rm(jobDir, { recursive: true, force: true }, () => { });
+              return res.status(500).json({ error: "C++ processing failed" });
             }
-          );
-        });
+
+            console.log("C++ Output:", cppOut);
+
+            // step 4 — fetch the card JUST inserted
+            db.query(
+              "SELECT * FROM CARDS ORDER BY CardID DESC LIMIT 1;",
+              (err, results) => {
+
+                if (err) 
+                {
+                  console.error("MySQL error:", err);
+                  fs.rm(jobDir, { recursive: true, force: true }, () => { });
+                  return res.status(500).json({ error: "Database fetch failed" });
+                }
+
+                const insertedCard = results[0];
+
+                // new step 5 - get the price in the background
+                execFile(
+                  path.join(__dirname, "C++ Code", "priceUpdater"), //call price updater
+                  [String(insertedCard.CardID)],
+                  console.log("Finishing getting price for:", insertedCard.CardID),
+                  (err) => {
+                    if (err) 
+                    {
+                      console.log("Price updater failed silently:", err.message);
+                    }
+                  }
+                );
+
+                // cleanup temp directory for this upload
+                fs.rm(jobDir, { recursive: true, force: true }, () => { });
+
+                // return card immediately even before price is updated
+                return res.status(200).json({ card: insertedCard });
+              }
+            );
+          }
+        );
       });
     });
   });
@@ -243,8 +267,7 @@ app.get("/userCards", (req, res) => {
   }
 
   const userQuery = "SELECT UserID FROM USERS WHERE UserName = ?";
-  db.query(userQuery, [username], (userErr, userResults) => 
-  {
+  db.query(userQuery, [username], (userErr, userResults) => {
     if (userErr || userResults.length === 0) 
     {
       console.error("Could not find user:", userErr);
@@ -284,7 +307,8 @@ app.delete("/deleteCard/:cardId", (req, res) => {
       return res.status(500).json({ error: "Database delete failed" });
     }
 
-    if (result.affectedRows === 0) {
+    if (result.affectedRows === 0) 
+    {
       return res.status(404).json({ error: "Card not found" }); //cards should be in the dashboard, possibly a fetching issue
     }
 
@@ -300,7 +324,8 @@ app.get("/allUsers", (req, res) => {
   const query = "SELECT UserID, UserName FROM USERS";
 
   db.query(query, (err, results) => {
-    if (err) {
+    if (err) 
+    {
       console.error("Failed to load users:", err);
       return res.status(500).json({ error: "Database error" });
     }
@@ -315,7 +340,7 @@ app.get("/catalogById/:id", (req, res) => { //the page names have to be differen
   const userId = req.params.id;
 
   //gets the cards of the user with the clicked on userID
-  const userQuery = "SELECT UserName FROM USERS WHERE UserID = ?"; 
+  const userQuery = "SELECT UserName FROM USERS WHERE UserID = ?";
   const cardsQuery = `
     SELECT cr.*
     FROM CATALOG c
@@ -324,14 +349,16 @@ app.get("/catalogById/:id", (req, res) => { //the page names have to be differen
   `;
 
   db.query(userQuery, [userId], (err, userResults) => {
-    if (err || userResults.length === 0) {
+    if (err || userResults.length === 0) 
+    {
       return res.status(404).json({ error: "User not found" });
     }
 
     const username = userResults[0].UserName;
 
     db.query(cardsQuery, [userId], (err2, cardResults) => {
-      if (err2) {
+      if (err2) 
+      {
         return res.status(500).json({ error: "Database error" });
       }
 
@@ -348,12 +375,17 @@ app.get("/likedUsers", (req, res) => { //liking user logic for getching
   const { username } = req.query;
 
   if (!username)
+  {
     return res.status(400).json({ error: "Username is required" });
+  }
 
   const q1 = "SELECT UserID FROM USERS WHERE UserName = ?";
+  
   db.query(q1, [username], (err, results) => {
     if (err || results.length === 0)
+    {
       return res.status(404).json({ error: "User not found" });
+    }
 
     const userID = results[0].UserID;
 
@@ -366,8 +398,10 @@ app.get("/likedUsers", (req, res) => { //liking user logic for getching
     `;
 
     db.query(q2, [userID], (err2, liked) => {
-      if (err2)
+      if (err2) 
+      {
         return res.status(500).json({ error: "DB error" });
+      }
 
       res.json(liked);
     });
@@ -382,13 +416,18 @@ app.post("/likeUser", (req, res) => { //liking user logic for posting
   const getUser = "SELECT UserID FROM USERS WHERE UserName = ?";
   db.query(getUser, [likerUsername], (err, results) => {
     if (err || results.length === 0)
+    {
       return res.status(404).json({ error: "User not found" });
+    }
 
     const likerID = results[0].UserID;
 
     const insert = "INSERT IGNORE INTO LIKES (LikerID, LikedUserID) VALUES (?, ?)"; //userid and the liked user's id is inserted
     db.query(insert, [likerID, likedUserId], (err2) => {
-      if (err2) return res.status(500).json({ error: "Failed to like" });
+      if (err2) 
+      {
+        return res.status(500).json({ error: "Failed to like" });
+      }
       res.json({ success: true });
     });
   });
@@ -400,18 +439,88 @@ app.delete("/unlikeUser", (req, res) => { //unliking user logic for deleting
 
   const getUser = "SELECT UserID FROM USERS WHERE UserName = ?"; //get the userID of the logged in user
   db.query(getUser, [likerUsername], (err, results) => {
-    if (err || results.length === 0)
+    if (err || results.length === 0) 
+    {
       return res.status(404).json({ error: "User not found" });
+    }
 
     const likerID = results[0].UserID;
 
     const del = "DELETE FROM LIKES WHERE LikerID = ? AND LikedUserID = ?"; //find the user you are unliking and delete that perosn
     db.query(del, [likerID, likedUserId], (err2) => {
-      if (err2) return res.status(500).json({ error: "Failed to unlike" });
+      if (err2) 
+      {
+        return res.status(500).json({ error: "Failed to unlike" });
+      }
+      
       res.json({ success: true });
     });
   });
 });
+
+
+
+app.post("/updateAllPrices", (req, res) => { //new price updater logic
+  const { username } = req.body;
+
+  if (!username) 
+  {
+    return res.status(400).json({ error: "Username is required" }); //issue if backend cant find the usernae
+  }
+
+  const userQuery = "SELECT UserID FROM USERS WHERE UserName = ?"; //this shouldn't be an error, because two people cant have the same username
+  db.query(userQuery, [username], (err, userResults) => {
+    if (err || userResults.length === 0) 
+      {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userID = userResults[0].UserID;
+
+    const cardsQuery = `SELECT cr.CardID, cr.PokeID FROM CARDS cr JOIN CATALOG c ON cr.CatalogID = c.CatalogID WHERE c.OwnerID = ?`;
+    //fetching all the cards in the catalog
+
+    db.query(cardsQuery, [userID], (err, cards) => { //more safety checks
+      if (err) 
+      {
+        console.error("DB error fetching cards:", err);
+        return res.status(500).json({ error: "Database error" });
+      }
+
+      if (cards.length === 0) 
+      {
+        return res.status(200).json({ message: "No cards to update." });
+      }
+
+      console.log(`Updating prices for ${cards.length} cards...`);
+
+      //running priceUpdater for each card
+      cards.forEach(card => {
+        execFile(
+          path.join(__dirname, "C++ Code", "priceUpdater"),
+          [String(card.CardID)], //passing in the cardID (not row number, but actual cardID)
+          (cppErr, cppOut, cppErrOut) => {
+            if (cppErr) 
+            {
+              console.error(`Price update failed for card ${card.CardID}`);
+              console.error(cppErrOut || cppErr.message);
+              return;
+            }
+
+            console.log("Price updated:", cppOut);
+          }
+        );
+      });
+
+      return res.status(200).json(
+      {
+        message: "Price updates started."
+      });
+    });
+  });
+});
+
+
 
 
 
@@ -443,8 +552,7 @@ app.get("/allData", (req, res) => {
   `;
 
   db.query(query, (err, results) => {
-    if (err) 
-    {
+    if (err) {
       console.error("Error fetching joined data:", err);
       return res.status(500).json({ error: "Database error" });
     }

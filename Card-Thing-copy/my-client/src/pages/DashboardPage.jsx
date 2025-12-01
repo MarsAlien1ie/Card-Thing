@@ -2,7 +2,6 @@ import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import './DashboardPage.css';
 import { useDropzone } from 'react-dropzone';
 import { useNavigate } from 'react-router-dom';
-import { v4 as uuidv4 } from 'uuid';
 import pokeball from '../images/pokeball.png';
 
 function DashboardPage() {
@@ -36,6 +35,10 @@ function DashboardPage() {
       }
     }
     fetchCards();
+
+    const interval = setInterval(fetchCards, 5000); //new refresh every 5 seconds to update card price
+
+    return () => clearInterval(interval);
   }, [username]);
 
 
@@ -172,37 +175,27 @@ function DashboardPage() {
         navigate('/');
   };
 
-  let filteredAndSortedCards = [...cards];
+  const handleUpdateAllPrices = async () => { //new button to update prices
+    //if (!username) return alert("Not logged in.");
 
-    // This logic will work once u add card attributes like 'name', 'type', and 'price'
-
-    // Apply Search Filter
-  if (searchCard) {
-    filteredAndSortedCards = filteredAndSortedCards.filter(card =>
-        card.name && card.name.toLowerCase().includes(searchCard.toLowerCase())
-    );
-  }
-
-    // Apply Type Filter
-  if (selectedType !== "all") {
-      filteredAndSortedCards = filteredAndSortedCards.filter(card =>
-          card.type === selectedType
-      );
-  }
-
-    // Apply Price Sort
-  if (sortOrder !== "none") {
-      filteredAndSortedCards.sort((a, b) => {
-          const priceA = a.price || 0;
-          const priceB = b.price || 0;
-
-          if (sortOrder === 'asc') {
-              return priceA - priceB;
-          } else {
-              return priceB - priceA;
-          }
+    try 
+    {
+      const response = await fetch("http://localhost:3001/updateAllPrices", //call the backend when clicking
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username })
       });
+
+      const data = await response.json();
+      alert(data.message || "Prices are being updated!");
+  } 
+  catch (err) 
+  {
+    console.error("Error updating prices:", err);
   }
+};
+
 
   return ( //UI layout + some logic
     <div className='dashboard-container'>
@@ -228,6 +221,12 @@ function DashboardPage() {
                         Other Users
                     </button>
                 </div>
+          <div className="price updater">
+            <button className="update-prices-button" onClick={handleUpdateAllPrices}>
+              Update All Prices
+            </button>
+          </div>
+        
         <div className="filter-controls">
           <input
               type="text"

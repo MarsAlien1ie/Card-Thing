@@ -20,6 +20,7 @@ CREATE TABLE POKEMON.CARDS (
     CardID INT AUTO_INCREMENT NOT NULL,
     CatalogID INT NOT NULL,
     PokeName VARCHAR(50) NOT NULL,
+    PokeID VARCHAR(32) NOT NULL,
     HP SMALLINT NOT NULL,
 	EvoStage VARCHAR(50) NOT NULL,
     Typing VARCHAR(50) NOT NULL,
@@ -33,7 +34,7 @@ CREATE TABLE POKEMON.CARDS (
 );
 
 
-CREATE TABLE LIKES (
+CREATE TABLE POKEMON.LIKES (
     LikeID INT AUTO_INCREMENT PRIMARY KEY,
     LikerID INT NOT NULL,
     LikedUserID INT NOT NULL,
@@ -43,6 +44,7 @@ CREATE TABLE LIKES (
 
 
 
+/*
 INSERT INTO POKEMON.USERS (UserName, UserEmail, UserPassword) VALUES ('Ash', 'Ash@gmail.com', 'Ash123!');
 INSERT INTO POKEMON.USERS (UserName, UserEmail, UserPassword) VALUES ('Misty', 'Misty@gmail.com', 'Misty123!');
 INSERT INTO POKEMON.USERS (UserName, UserEmail, UserPassword) VALUES ('Brock', 'Brock@gmail.com', 'Brock123!');
@@ -57,7 +59,7 @@ SELECT UserID FROM POKEMON.USERS WHERE UserName = 'Brock';
 INSERT INTO POKEMON.CATALOG (OwnerID) 
 SELECT UserID FROM POKEMON.USERS WHERE UserName = 'Ash';
 
-/*
+
 INSERT INTO POKEMON.CARDS (CatalogID, PokeName, HP, EvoStage, Typing, Rarity, PokeSet, UngradedPrice, ImageURL)
 VALUES((SELECT CatalogID FROM POKEMON.CATALOG, POKEMON.USERS WHERE UserID = OwnerID AND UserName = 'Brock'), 
 'Onix', 300, 'Basic', 'Rock', '12/200', 'Kanto', 1.20, 'fakeurl');
@@ -115,6 +117,9 @@ DELIMITER ;
 
 SELECT *
 FROM POKEMON.USERS;
+
+SELECT *
+FROM POKEMON.LIKES;
 
 SELECT *
 FROM POKEMON.CATALOG;

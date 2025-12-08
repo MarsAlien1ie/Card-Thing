@@ -1,0 +1,11 @@
+ultralytics
+opencv-python
+Pillow
+imagehash
+numpy
+scipy
+requests
+pandas
+paddleocr
+paddlepaddle
+imutils

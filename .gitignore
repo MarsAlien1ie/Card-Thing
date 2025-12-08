@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Model files (too large for git)
+*.pt
+*.pth
+*.onnx
+*.pb
+
+# Test results and outputs
+ocr_test_results/
+predictions/
+predictions_identified/
+runs/
+rotation_examples/
+rotation/
+
+# Test images (may be large)
+test_images/
+TEST/
+
+# Database files (may be large or contain sensitive data)
+*.csv
+*.db
+*.sqlite
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary/reference files
+DIFFERENCES.md
+*.md.bak
+
+# Logs
+*.log
+

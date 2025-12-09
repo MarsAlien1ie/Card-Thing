@@ -13,6 +13,24 @@ const SignPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault(); // prevent page reload
 
+    //new logic to make sure fields arent null
+    if (!username.trim()) {
+      alert("Username cannot be empty.");
+      return;
+    }
+    if (!email.trim()) {
+      alert("Email cannot be empty.");
+      return;
+    }
+    if (!password.trim()) {
+      alert("Password cannot be empty.");
+      return;
+    }
+    if (password.length < 5) {
+      alert("Password must be at least 5 characters long.");
+      return;
+    }
+
     try { // signup set to backend and sent to database
       const response = await fetch("http://localhost:3001/signup", 
         {

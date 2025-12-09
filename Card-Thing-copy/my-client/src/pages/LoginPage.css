@@ -180,3 +180,17 @@
     left: 50%;
     width: 50px;
 }
+
+.google-button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 15px;
+    font-size: 1.1rem;
+    background: linear-gradient(to bottom, #ff0000 50%, #ffffff 50%);
+    border: 2px solid black;
+    border-radius: 20px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: black;
+    cursor: pointer;
+}

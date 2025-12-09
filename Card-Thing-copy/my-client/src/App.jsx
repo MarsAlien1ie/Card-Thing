@@ -6,6 +6,7 @@ import { Routes, Route } from "react-router-dom";
 import DashboardPage from "./pages/DashboardPage";
 import OtherUsers from "./pages/OtherUsers";
 import UserCatalog from "./pages/UserCatalog";
+import GoogleCallback from "./pages/GoogleCallback";
 
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignPage />} />
+      <Route path="/googleAuthSuccess" element={<GoogleCallback />} />
       <Route path="/dashboard" element={<DashboardPage/>}/>
       <Route path="/users" element={<OtherUsers/>}/>
       <Route path="/catalog/:userId" element={<UserCatalog />} />

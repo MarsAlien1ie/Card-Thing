@@ -237,6 +237,7 @@ body {
     cursor: pointer;
 }
 
+
 .hero-image {
     position: relative;
 }
@@ -343,11 +344,15 @@ body {
     background: linear-gradient(to bottom, #ff0000 50%, #ffffff 50%);
     border: 2px solid black;
     border-radius: 10px;
-    padding: 4px 10px;
     font-size: 1.2rem;
     font-weight: bold;
     color: black;
     cursor: pointer;
+
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 20px;
 }
 
 /* Footer */
@@ -378,4 +383,16 @@ body {
 .footer p {
     font-size: 0.9rem;
     color: white;
+}
+
+.cta a.btn {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 20px;
+    text-decoration: none;
+}
+
+.pokeball-decoration {
+    pointer-events: none;
 }

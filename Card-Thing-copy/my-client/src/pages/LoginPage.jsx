@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import {Link, useNavigate} from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import "./LoginPage.css";
 import pikachuImage from "../images/pikachu.png";
 import pokeball from "../images/pokeball.png";
@@ -11,30 +11,26 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => { //login function handler
     e.preventDefault();
-    try 
-    {
+    try {
       const res = await fetch("http://localhost:3001/login", //connect to backend
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password }),
+        });
       const data = await res.json(); //should fetch user data from backend (if exists)
-      if (res.ok) 
-      {
+      if (res.ok) {
         alert("Login successful!");
         console.log("Logged in user:", data.user); //for testing purposes
         localStorage.setItem("username", data.user.UserName);
         localStorage.setItem("userID", data.user.UserID);
         navigate('/dashboard'); //redirect to dashboard
-      } 
-      else 
-      {
+      }
+      else {
         alert("Unsuccessful! " + data.message); //probably wrong credentials
       }
-    } 
-    catch (err) 
-    {
+    }
+    catch (err) {
       console.error("Network error:", err);
       alert("Could not connect to backend."); //forgot to connect to backend
     }
@@ -43,14 +39,14 @@ const LoginPage = () => {
   return ( //login page UI (Danylo)
     <div className="login-page-container">
       <div className="background-decorations">
-                <img className="pokeball-decoration pos-1" src={pokeball} alt="" />
-                <img className="pokeball-decoration pos-2" src={pokeball} alt="" />
-                <img className="pokeball-decoration pos-4" src={pokeball} alt="" />
-                <img className="pokeball-decoration pos-5" src={pokeball} alt="" />
-                <img className="pokeball-decoration pos-6" src={pokeball} alt="" />
-                <img className="pokeball-decoration pos-7" src={pokeball} alt="" />
-                <img className="pokeball-decoration pos-8" src={pokeball} alt="" />
-            </div>
+        <img className="pokeball-decoration pos-1" src={pokeball} alt="" />
+        <img className="pokeball-decoration pos-2" src={pokeball} alt="" />
+        <img className="pokeball-decoration pos-4" src={pokeball} alt="" />
+        <img className="pokeball-decoration pos-5" src={pokeball} alt="" />
+        <img className="pokeball-decoration pos-6" src={pokeball} alt="" />
+        <img className="pokeball-decoration pos-7" src={pokeball} alt="" />
+        <img className="pokeball-decoration pos-8" src={pokeball} alt="" />
+      </div>
       <form className="login-card" onSubmit={handleLogin}>
         <img src={pikachuImage} alt="Pikachu" className="pikachu-peeking" />
         <h1>Card Cataloger</h1>
@@ -80,6 +76,11 @@ const LoginPage = () => {
         <button type="submit" className="login-button">
           Login
         </button>
+
+        <button className="google-button" onClick={() => {window.location.href = "http://localhost:3001/auth/google";}}>
+          Sign in with Google
+        </button>
+
 
         <div className="separator">or</div>
         <p className="signup-link">

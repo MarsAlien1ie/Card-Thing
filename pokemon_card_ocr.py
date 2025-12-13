@@ -1,11 +1,4 @@
 #!/usr/bin/env python3
-"""
-Pokemon Card OCR - Text Extraction Module
-
-Provides OCR functionality for extracting card names from Pokemon card images.
-Used by updated_main_with_ocr.py as a candidate type in the identification pipeline.
-"""
-
 import os
 import cv2
 import numpy as np
@@ -32,7 +25,7 @@ class PokemonCardOCR:
     
     def __init__(self, use_gpu=False):
         """
-        Initialize the OCR pipeline.
+        Initialize the OCR pipeline with optimized settings for speed.
         
         Args:
             use_gpu: Whether to use GPU for OCR (not currently used)
@@ -51,12 +44,22 @@ class PokemonCardOCR:
                 print("   Trying standard PaddleOCR...")
                 if PaddleOCR:
                     try:
+                        # Use optimized settings: skip angle classification for speed
                         try:
-                            self.ocr = PaddleOCR(use_textline_orientation=True, lang='en')
+                            self.ocr = PaddleOCR(
+                                use_textline_orientation=True,
+                                lang='en',
+                                use_angle_cls=False,  # Skip angle classification for speed
+                                show_log=False
+                            )
                         except (TypeError, ValueError):
-                            self.ocr = PaddleOCR(use_angle_cls=True, lang='en')
+                            self.ocr = PaddleOCR(
+                                use_angle_cls=False,  # Skip angle classification for speed
+                                lang='en',
+                                show_log=False
+                            )
                         self.use_structure = False
-                        print("✓ Standard PaddleOCR initialized")
+                        print("✓ Standard PaddleOCR initialized (optimized for speed)")
                     except Exception as e2:
                         print(f"⚠️  Error initializing PaddleOCR: {e2}")
                         self.ocr = None
@@ -65,12 +68,22 @@ class PokemonCardOCR:
                     self.ocr = None
         elif PaddleOCR:
             try:
+                # Use optimized settings: skip angle classification for speed
                 try:
-                    self.ocr = PaddleOCR(use_textline_orientation=True, lang='en')
+                    self.ocr = PaddleOCR(
+                        use_textline_orientation=True,
+                        lang='en',
+                        use_angle_cls=False,  # Skip angle classification for speed
+                        show_log=False
+                    )
                 except (TypeError, ValueError):
-                    self.ocr = PaddleOCR(use_angle_cls=True, lang='en')
+                    self.ocr = PaddleOCR(
+                        use_angle_cls=False,  # Skip angle classification for speed
+                        lang='en',
+                        show_log=False
+                    )
                 self.use_structure = False
-                print("✓ Standard PaddleOCR initialized")
+                print("✓ Standard PaddleOCR initialized (optimized for speed)")
             except Exception as e:
                 print(f"⚠️  Error initializing PaddleOCR: {e}")
                 self.ocr = None
@@ -81,12 +94,13 @@ class PokemonCardOCR:
         if self.ocr is None:
             print("⚠️  WARNING: OCR is not available. Text extraction will be skipped.")
     
-    def preprocess_for_ocr(self, image):
+    def preprocess_for_ocr(self, image, fast_mode=True):
         """
-        Preprocess image for better OCR results with enhanced contrast and sharpening.
+        Preprocess image for OCR with optimized settings for speed.
         
         Args:
             image: Input image (BGR format)
+            fast_mode: If True, use minimal preprocessing (default True for speed)
             
         Returns:
             Preprocessed image (BGR format)
@@ -97,32 +111,33 @@ class PokemonCardOCR:
         else:
             processed = image.copy()
         
-        # Enhance contrast using CLAHE
-        lab = cv2.cvtColor(processed, cv2.COLOR_BGR2LAB)
-        l, a, b = cv2.split(lab)
-        
-        clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
-        l_enhanced = clahe.apply(l)
-        
-        lab_enhanced = cv2.merge([l_enhanced, a, b])
-        processed = cv2.cvtColor(lab_enhanced, cv2.COLOR_LAB2BGR)
-        
-        # Apply slight sharpening
-        kernel = np.array([[-1, -1, -1],
-                          [-1,  9, -1],
-                          [-1, -1, -1]])
-        processed = cv2.filter2D(processed, -1, kernel * 0.3)
+        # Use minimal preprocessing for speed (default)
+        if fast_mode:
+            # Minimal preprocessing: just grayscale conversion for slight denoising
+            gray = cv2.cvtColor(processed, cv2.COLOR_BGR2GRAY)
+            processed = cv2.cvtColor(gray, cv2.COLOR_GRAY2BGR)
+        else:
+            # Full preprocessing with CLAHE (slower but better quality)
+            lab = cv2.cvtColor(processed, cv2.COLOR_BGR2LAB)
+            l, a, b = cv2.split(lab)
+            
+            clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(4, 4))
+            l_enhanced = clahe.apply(l)
+            
+            lab_enhanced = cv2.merge([l_enhanced, a, b])
+            processed = cv2.cvtColor(lab_enhanced, cv2.COLOR_LAB2BGR)
         
         return processed
     
-    def extract_text_from_card(self, card_image, preprocess=True, save_roi_path=None):
+    def extract_text_from_card(self, card_image, preprocess=True, save_roi_path=None, fast_mode=True):
         """
-        Extract card name from a card image using OCR.
+        Extract card name from a card image using OCR (optimized for speed).
         
         Args:
             card_image: Card image (BGR format) - should already be rotated/corrected
             preprocess: Whether to preprocess image
             save_roi_path: Optional path to save ROI image for debugging
+            fast_mode: If True, use minimal preprocessing (default True for speed)
             
         Returns:
             Dictionary with extracted text and confidence
@@ -154,9 +169,19 @@ class PokemonCardOCR:
         if save_roi_path:
             cv2.imwrite(save_roi_path, name_roi)
         
+        # Resize ROI to speed up OCR (max width 600px for better performance, maintain aspect ratio)
+        roi_h, roi_w = name_roi.shape[:2]
+        max_width = 600  # Smaller size for faster processing
+        if roi_w > max_width:
+            scale = max_width / roi_w
+            new_w = max_width
+            new_h = int(roi_h * scale)
+            name_roi = cv2.resize(name_roi, (new_w, new_h), interpolation=cv2.INTER_AREA)
+            print(f"  [OCR] Resized ROI from {roi_w}x{roi_h} to {new_w}x{new_h} for faster processing")
+        
         # Preprocess the ROI
         if preprocess:
-            processed = self.preprocess_for_ocr(name_roi)
+            processed = self.preprocess_for_ocr(name_roi, fast_mode=fast_mode)
         else:
             if len(name_roi.shape) == 2:
                 processed = cv2.cvtColor(name_roi, cv2.COLOR_GRAY2BGR)
@@ -233,10 +258,10 @@ class PokemonCardOCR:
                     try:
                         result = self.ocr.predict(processed_bgr)
                     except (TypeError, AttributeError, Exception):
-                        # Fallback to temp file
-                        with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as tmp:
-                            tmp_path = tmp.name
-                            cv2.imwrite(tmp_path, processed_bgr, [cv2.IMWRITE_JPEG_QUALITY, 95])
+                    # Fallback to temp file (lower quality for speed)
+                    with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as tmp:
+                        tmp_path = tmp.name
+                        cv2.imwrite(tmp_path, processed_bgr, [cv2.IMWRITE_JPEG_QUALITY, 85])  # Lower quality for speed
                         result = self.ocr.predict(tmp_path)
                 finally:
                     if tmp_path and os.path.exists(tmp_path):

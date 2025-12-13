@@ -279,7 +279,7 @@ def identify_smart_hybrid(cv2_image, contour, crop_x1, crop_y1, raw_crop_pil, da
             print("    > Trying OCR candidate...")
             ocr_image = best_rot_img if best_rot_img is not None else raw_img_cv2
             
-            ocr_result = ocr_pipeline.extract_text_from_card(ocr_image, preprocess=True)
+            ocr_result = ocr_pipeline.extract_text_from_card(ocr_image, preprocess=True, fast_mode=True)
             ocr_text = ocr_result.get('text', '').strip()
             
             if ocr_text:

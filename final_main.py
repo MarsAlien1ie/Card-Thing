@@ -21,7 +21,7 @@ DATABASE_FILE = 'optimized_pokemon_database.csv'
 # IMAGE_PATH = "./test_images/20250507_170952.jpg"
 # IMAGE_PATH = "./images/20250507_172051.jpg"
 # IMAGE_PATH = './images/20250430_124628.jpg'
-# IMAGE_PATH = r'.\test\20250507_171630.jpg' # ocr works but visual match doesnt .. ?
+IMAGE_PATH = r'.\test\20250507_171630.jpg'
 
 # IMAGE_PATH = './test_images/clean.png'
 # IMAGE_PATH = './test_images/20250507_170623.jpg'
@@ -34,7 +34,7 @@ DATABASE_FILE = 'optimized_pokemon_database.csv'
 # IMAGE_PATH = r'.\Card-Thing\test_images\FINAL_EXAMPLES\working_turtwig.jpg'
 # IMAGE_PATH = r'.\test\working_kleavorVSTAR.jpg'
 # IMAGE_PATH = r'.\test\working_darkrai.jpg'
-IMAGE_PATH = r'.\test_images\FINAL_EXAMPLES\working_dialgaV.jpg' 
+IMAGE_PATH = r'.\Card-Thing\test_images\FINAL_EXAMPLES\working_dialgaV.jpg' 
 
 
 OUTPUT_FOLDER = './predictions_identified'
@@ -238,7 +238,7 @@ def identify_smart_hybrid(cv2_image, contour, crop_x1, crop_y1, raw_crop_pil, ha
                             dist = current_hash - db_hash
                             # if the exact name is found give it more priority(?)
                             if normalize_string(cand['name']) == normalize_string(est_name):
-                                dist -= 2 
+                                dist -= 7
                             ranked_candidates.append((dist, cand))
                 
                     ranked_candidates.sort(key=lambda x: x[0])

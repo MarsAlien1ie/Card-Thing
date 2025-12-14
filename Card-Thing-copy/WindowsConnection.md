@@ -16,6 +16,8 @@ https://www.python.org/downloads/
 ```
 python -m pip install opencv-python imagehash pillow scipy ultralytics imutils
 
+python -m pip install paddlepaddle paddleocr
+
 ```
 
 ## Installing the Visual Studio Build tools and Windows SDK
@@ -129,14 +131,92 @@ cl /EHsc /std:c++17 ^
 
 ```
 
-## copy the DLLs
-> in your powershell run 
+## Copy the DLLs
+>  Each c++ executables will need their its .dll files in the same folder as the .exe
+
+>executable locations:
+
+build\newUser.exe
+
+C++ Code\processCard.exe
+
+C++ Code\priceUpdater.exe
+
+
+> in powershell got to my-server
 
 ``` 
-Copy-Item "C:\vcpkg\installed\x64-windows\bin\*.dll" "C++ Code"
-Copy-Item "C:\Program Files\MySQL\MySQL Server 8.0\lib\libmysql.dll" "C++ Code"
+cd path\to\Card-Thing\Card-Thing-copy\my-server
+``` 
+
+> and now copy the DLL into both executable folders
+``` 
+Copy-Item "C:\vcpkg\installed\x64-windows\bin\*.dll" ".\C++ Code\"
+Copy-Item "C:\vcpkg\installed\x64-windows\bin\*.dll" ".\build\"
+
+Copy-Item "C:\Program Files\MySQL\MySQL Server 8.0\lib\libmysql.dll" ".\C++ Code\"
+Copy-Item "C:\Program Files\MySQL\MySQL Server 8.0\lib\libmysql.dll" ".\build\"
 
 ```
+
+## Added on Running C++ executables on node.js (might need to update code)
+> On Windows, Node.js does not automatically find .exe files when running c++ programs For every c++ program in server.js 
+> we must call their full path and manually include the .exe
+
+> NOTE: Do not modify any execFile calls that invoke Python.
+
+## Step 1
+
+> Define executable paths which are commented under _dirname
+
+``` 
+const newUserPath = path.join(__dirname, "build", "newUser.exe");
+const processCardPath = path.join(__dirname, "C++ Code", "processCard.exe");
+const priceUpdaterPath = path.join(__dirname, "C++ Code", "priceUpdater.exe");
+```
+
+## Step 2 
+> change existing execFile calls
+
+### Signup (for new users)
+
+>before
+
+```
+execFile("./my-server/build/newUser", [username, email, hashedPassword], ...)
+``` 
+
+>after
+
+```
+execFile(newUserPath, [username, email, hashedPassword], (error, stdout, stderr)...)
+``` 
+### process card
+
+>before
+```
+execFile(
+  path.join(__dirname, "C++ Code", "processCard"),
+  [jsonPath, catalogID.toString()],
+  (cppErr, cppOut, cppErrOut) => {
+    ...
+  }
+);
+```
+> After 
+
+```
+execFile(
+  processCardPath,
+  [jsonPath, catalogID.toString()],
+  (cppErr, cppOut, cppErrOut) => {
+    ...
+  }
+);
+
+```
+> In total you need to edit 4 execFile, but not the python 
+
 
 ## Run the Backend 
 

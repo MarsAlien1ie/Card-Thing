@@ -18,6 +18,12 @@ import session from "express-session";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+//const newUserPath = path.join(__dirname, "build", "newUser.exe");
+//const processCardPath = path.join(__dirname, "C++ Code", "processCard.exe");
+//const priceUpdaterPath = path.join(__dirname, "C++ Code", "priceUpdater.exe");
+
+
+
 
 const app = express();
 const PORT = 3001;

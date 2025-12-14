@@ -56,6 +56,8 @@ function DashboardPage() {
   const [selectedTypeImage, setSelectedTypeImage] = useState(typeOptions[0].image);
   const [isTypeDropdownOpen, setIsTypeDropdownOpen] = useState(false);
 
+  const [isRepricing, setIsRepricing] = useState(false);
+
   //fetching card from backend on dashboard
   useEffect(() => {
     async function fetchCards() {
@@ -77,8 +79,7 @@ function DashboardPage() {
 
         console.log("Loaded cards:", fetchedData);
       }
-      catch (err) 
-      {
+      catch (err) {
         console.error("Error fetching cards:", err);
       }
     }
@@ -88,6 +89,7 @@ function DashboardPage() {
     const interval = setInterval(fetchCards, 1500); //refrehs the page every 1.5 seconds for the card prices to show
     return () => clearInterval(interval);
   }, [username]);
+
 
   const filteredCards = useMemo(() => {
     let results = [...cards]; //get all the cards
@@ -137,24 +139,21 @@ function DashboardPage() {
         formData.append("cardImage", file);
         formData.append("username", username);
 
-        try 
-        {
+        try {
           const response = await fetch("http://localhost:3001/upload",
-          {
-            method: "POST",
-            body: formData,
-          });
+            {
+              method: "POST",
+              body: formData,
+            });
           await response.json();
         }
-      catch (err) 
-      {
-        console.error("Upload failed:", err); //test message to spot errors
-      } 
-      finally 
-      {
-        setUploadsInProgress(prev => prev - 1); //when upload is done, decrease
-      }
-    })
+        catch (err) {
+          console.error("Upload failed:", err); //test message to spot errors
+        }
+        finally {
+          setUploadsInProgress(prev => prev - 1); //when upload is done, decrease
+        }
+      })
     );
   }, [username]);
 
@@ -183,6 +182,16 @@ function DashboardPage() {
     setIsModalOpen(false);
   };
 
+  useEffect(() => {
+  if (!isRepricing) return;
+
+  const timeout = setTimeout(() => {
+    setIsRepricing(false);
+  }, 60000);
+
+  return () => clearTimeout(timeout);
+}, [isRepricing]);
+
   //delete now deletes one quantity per click
   const handleDeleteCard = async (event, cardIdToDelete) => {
     event.stopPropagation();
@@ -194,19 +203,16 @@ function DashboardPage() {
 
       const data = await response.json(); //send this to backend
 
-      if (data.deleted) 
-        {//to delete the entire card when there is only 1 left
+      if (data.deleted) {//to delete the entire card when there is only 1 left
         setCards(prevCards => prevCards.filter(card => card.CardID !== cardIdToDelete));
-      } 
-      else 
-        { //update the card quantity to (should be -1 at a time)
+      }
+      else { //update the card quantity to (should be -1 at a time)
         setCards(prevCards => prevCards.map(card => card.CardID === cardIdToDelete ? { ...card, Quantity: data.newQuantity } : card
-          )
+        )
         );
       }
-    } 
-    catch (err) 
-    {
+    }
+    catch (err) {
       console.error("Failed to delete card", err);
     }
   };
@@ -227,19 +233,23 @@ function DashboardPage() {
     //if (!username) return alert("Not logged in.");
 
     try {
+      setIsRepricing(true);
       const response = await fetch("http://localhost:3001/updateAllPrices", //call the backend when clicking
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username })
+          body: JSON.stringify({ username }),
         });
 
-      const data = await response.json();
-      alert(data.message || "Prices are being updated!");
-    }
+      if (!response.ok) {
+        throw new Error("Failed to update prices");
+      }
+    } 
+
     catch (err) {
-      console.error("Error updating prices:", err);
-    }
+      console.error("Reprice failed:", err);
+      setIsRepricing(false);
+    } 
   };
 
 
@@ -268,8 +278,12 @@ function DashboardPage() {
           </button>
         </div>
         <div className="price updater">
-          <button className="update-prices-button" onClick={handleUpdateAllPrices}>
-            Update All Prices
+          <button className="update-prices-button" onClick={handleUpdateAllPrices} disabled={isRepricing}>
+            {isRepricing ? (
+              <div className="update-loader"></div>
+            ) : (
+              <span className="inner-oval">Reprice</span>
+            )}
           </button>
         </div>
 
@@ -325,7 +339,7 @@ function DashboardPage() {
           </button>
         </div>
         <div className="header-buttons">
-          <button className="add-card-button" onClick={open}>+ Add New Card</button>
+          <button className="add-card-button" onClick={open}><span className='inner-oval'>+ Add New Card</span></button>
           <button className="logout-button" onClick={handleLogout}>Log Out</button> {/* NEW: Logout Button */}
         </div>
       </header>
@@ -340,9 +354,9 @@ function DashboardPage() {
                 alt="Loading..."
                 width="80"
               />
-              <p className = "animationText">{uploadsInProgress === 1 ? 
-              "Catching 1 card..." : //if 1 card ? if multiple cards
-              `Catching ${uploadsInProgress} cards...`}
+              <p className="animationText">{uploadsInProgress === 1 ?
+                "Catching 1 card..." : //if 1 card ? if multiple cards
+                `Catching ${uploadsInProgress} cards...`}
               </p>
             </div>
             // This shows different text based on if a user is dragging a file
@@ -365,6 +379,9 @@ function DashboardPage() {
             <div className="price-hover-box">
               ${Number(card.UngradedPrice).toFixed(2)} {/*convert price to a float*/}
               {/*this hover box doesn't look too good, in the css, make it prettier*/}
+            </div>
+            <div className='quantity-hover-box'>
+              x {card.Quantity} {/*display the quantity of the card*/}
             </div>
           </div>
         ))}

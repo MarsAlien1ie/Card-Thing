@@ -187,7 +187,7 @@ export default function UserCatalog() {
         </div>
 
         <button className="add-card-button" onClick={() => navigate("/users")}>
-          ← Back to Users
+          <span className="inner-oval">← Back to Users</span>
         </button>
       </header>
 
@@ -202,6 +202,9 @@ export default function UserCatalog() {
             />
             <div className="price-hover-box">
               ${Number(card.UngradedPrice).toFixed(2)}
+            </div>
+            <div className='quantity-hover-box'>
+              x {card.Quantity} {/*display the quantity of the card*/}
             </div>
           </div>
         ))

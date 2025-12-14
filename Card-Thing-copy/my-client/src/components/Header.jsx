@@ -8,7 +8,7 @@ const Header = () => {
                 <a href="#features">Features</a>
                 <Link to="/login">
                     <button class="get-started-button">
-                        Get Started
+                        <span className="inner-oval">Get Started</span>
                     </button>
                 </Link>
             </nav>

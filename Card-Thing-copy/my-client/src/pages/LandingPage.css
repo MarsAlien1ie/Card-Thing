@@ -344,15 +344,11 @@ body {
     background: linear-gradient(to bottom, #ff0000 50%, #ffffff 50%);
     border: 2px solid black;
     border-radius: 10px;
+    padding: 4px 10px;
     font-size: 1.2rem;
     font-weight: bold;
     color: black;
     cursor: pointer;
-
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    padding: 10px 20px;
 }
 
 /* Footer */
@@ -395,4 +391,14 @@ body {
 
 .pokeball-decoration {
     pointer-events: none;
+}
+
+.inner-oval {
+    padding: 3px;
+    background:white;
+    color: black;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: bold;
+    border: 2px solid black;
 }

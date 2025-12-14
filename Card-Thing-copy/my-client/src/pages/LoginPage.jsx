@@ -74,11 +74,11 @@ const LoginPage = () => {
         </div>
 
         <button type="submit" className="login-button">
-          Login
+          <span className="inner-oval">Login</span>
         </button>
 
         <button className="google-button" onClick={() => {window.location.href = "http://localhost:3001/auth/google";}}>
-          Sign in with Google
+          <span className="inner-oval">Sign in with Google</span>
         </button>
 
 

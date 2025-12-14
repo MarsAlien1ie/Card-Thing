@@ -12,7 +12,7 @@ const CallToAction = () => {
                     Join thousands of trainers who are already
                     using Card Cataloger to manage their collections
                 </p>
-                <Link to="/login" className="btn btn-red">Get Started</Link>
+                <Link to="/login" className="btn btn-red"><span className='inner-oval'>Get Started</span></Link>
             </div>
         </section>
     );

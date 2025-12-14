@@ -1,5 +1,0 @@
-train: C:/Users/mines/John Data/research/pokemon_dataset/labels/YOLODataset/images/train
-val: C:/Users/mines/John Data/research/pokemon_dataset/labels/YOLODataset/images/val
-
-nc: 1
-names: ['card']

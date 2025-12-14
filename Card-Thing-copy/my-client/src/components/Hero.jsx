@@ -19,7 +19,7 @@ const Hero = () => {
                     with fellow collectors worldwide.
                 </p>
                 <Link to="/login">
-                    <button className="btn-red-outline">Start Collecting</button>
+                    <button className="btn-red-outline"><span className='inner-oval'>Start Collecting</span></button>
                 </Link>
             </div>
             <div className="hero-image-container">

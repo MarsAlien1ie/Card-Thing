@@ -101,7 +101,7 @@ const SignPage = () => {
         </div>
 
         <button type="submit" className="login-button">
-          Sign Up
+          <span className="inner-oval">Sign Up</span>
         </button>
 
         <div className="separator">or</div>

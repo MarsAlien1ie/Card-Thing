@@ -164,7 +164,7 @@ app.post("/upload", upload.single("cardImage"), (req, res) => {
   const jsonPath = path.join(jobDir, "detected_card.json"); //make the path
 
   // first, run Python predictor
-  execFile("python3", [path.join(__dirname, "image-model", "predictor.py"), filePath, jsonPath], (pyErr, pyOut, pyErrOut) => { //file path to the code
+  execFile("python3", [path.join(__dirname, "image_model", "final_main.py"), filePath, jsonPath], (pyErr, pyOut, pyErrOut) => { //file path to the code
     if (pyErr) {
       // if predictor exited with code 3 then there was no detection
       if (pyErr.code === 3) {

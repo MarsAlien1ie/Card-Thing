@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import './OtherUsers.css'; 
 import pokeball from '../images/pokeball.png';
 
-// --- Mock Data ---
+//  Mock Data 
 const MOCK_USERS = [
   { id: 1, name: 'Person1', isLiked: false },
   { id: 2, name: 'Person2', isLiked: false },
@@ -123,3 +123,4 @@ export default function OtherUsers() {
     </div>
   );
 }
+
